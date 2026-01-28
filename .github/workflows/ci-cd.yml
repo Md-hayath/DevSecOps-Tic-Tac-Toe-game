@@ -63,7 +63,7 @@ jobs:
     needs: [build]
 
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.sha.outputs.image }}
 
     steps:
       - uses: actions/checkout@v4
@@ -91,6 +91,11 @@ jobs:
             type=ref,event=branch
             latest
 
+      - name: Extract SHA image tag
+        id: sha
+        run: |
+          echo "image=$(echo '${{ steps.meta.outputs.tags }}' | grep sha- | head -n 1)" >> $GITHUB_OUTPUT
+
       - name: Build Docker image (local)
         uses: docker/build-push-action@v5
         with:
@@ -100,15 +105,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Select image tag for Trivy
-        id: scanimage
-        run: |
-          echo "IMAGE=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)" >> $GITHUB_OUTPUT
-
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ steps.scanimage.outputs.IMAGE }}
+          image-ref: ${{ steps.sha.outputs.image }}
           format: table
           exit-code: 1
           ignore-unfixed: true
@@ -141,12 +141,11 @@ jobs:
 
       - name: Update deployment image
         run: |
-          NEW_IMAGE=$(echo "${{ needs.docker.outputs.image_tag }}" | head -n 1)
-          sed -i "s|image:.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
-          echo "Updated image to ${NEW_IMAGE}"
+          sed -i "s|image:.*|image: ${{ needs.docker.outputs.image }}|g" kubernetes/deployment.yaml
+          echo "Updated image to ${{ needs.docker.outputs.image }}"
 
       - name: Commit and push changes
         run: |
           git add kubernetes/deployment.yaml
-          git commit -m "Update image to ${NEW_IMAGE} [skip ci]" || echo "No changes"
+          git commit -m "Update image to SHA tag [skip ci]" || echo "No changes"
           git push origin main
