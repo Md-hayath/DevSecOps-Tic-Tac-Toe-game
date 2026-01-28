@@ -88,7 +88,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.TOKEN}}
 
       - name: Docker metadata
         id: meta
@@ -146,7 +146,7 @@ jobs:
       - name: Checkout repo with PAT
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GHCR_PAT }}
+          token: ${{ secrets.TOKEN }}
 
       - name: Configure git
         run: |
