@@ -80,3 +80,7 @@ View logs:
 ```bash
 kubectl logs -l app=tic-tac-toe
 ```
+
+## images
+<img width="998" height="272" alt="Screenshot 2026-01-22 100338" src="https://github.com/user-attachments/assets/41e7adcd-f68e-4b62-ad1e-2d1035b57e1f" />
+<img width="998" height="272" alt="Screenshot 2026-01-22 100338" src="https://github.com/user-attachments/assets/34cc36a8-cd2e-49bd-be38-d5c05f87e474" />
